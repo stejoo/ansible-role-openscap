@@ -1,0 +1,6 @@
+---
+# OpenSCAP OS specific vars for AlmaLinux 8
+
+openscap_packages:
+  - crypto-policies-scripts
+  - scap-security-guide

@@ -1,0 +1,10 @@
+---
+# OpenSCAP OS specific vars for Red Hat
+# Written for RHEL 8, might work on others of the family
+
+openscap_packages:
+  - crypto-policies-scripts
+  - scap-security-guide
+
+# OpenSCAP uses "rhel" for the distribution name instead of Ansible's "RedHat".
+openscap_distribution_name: "rhel"

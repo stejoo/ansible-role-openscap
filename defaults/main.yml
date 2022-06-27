@@ -1,0 +1,56 @@
+---
+# defaults file for ansible-role-openscap
+
+# List of required packages for role OpenSCAP.
+# Defined empty here, may contain packages in distribution specific vars (see vars/).
+openscap_packages: []
+
+# Path to SCAP content directory.
+openscap_content_directory: /usr/share/xml/scap/ssg/content
+
+# Default name of the distribution within OpenSCAP.
+# Possible override via distribution specific vars (vars/).
+openscap_distribution_name: "{{ ansible_facts.distribution | lower }}"
+
+# OpenSCAP Data Stream file, containing policy with various profiles.
+# Should be set to a XML filename present in 'openscap_content_directory'.
+# Possible override via distribution specific vars (vars/).
+openscap_data_stream_file: "ssg-{{ openscap_distribution_name }}{{ ansible_facts.distribution_major_version }}-ds.xml"
+
+# OpenSCAP profile.
+# Security profile to evaluate with and remediate to.
+openscap_profile: ''
+
+# OpenSCAP tailoring file to copy and use.
+# Tailoring file may contain adjustment to defined OpenSCAP profile.
+openscap_tailoring_file: ''
+
+# Should generated result and report file be removed from client after successful run? (bool; default true)
+openscap_clean_result_files: true
+
+
+# OpenSCAP Evaluation (scan)
+## Where to write OpenSCAP scan HTML report file?
+openscap_scan_report_path: "/tmp/openscap_scan_report_{{ ansible_facts.date_time.iso8601 }}.html"
+## Where to write OpenSCAP XCCDF Results file?
+openscap_scan_results_path: "/tmp/openscap_scan_results_{{ ansible_facts.date_time.iso8601 }}.xml"
+## Where to write OpenSCAP ARF (result data stream) file?
+openscap_scan_results_arf_path: "/tmp/openscap_scan_results_arf_{{ ansible_facts.date_time.iso8601 }}.xml"
+
+
+# OpenSCAP Remediation (fix)
+## Should the system be remediated if not in a compliant state? (bool; default true)
+openscap_remediate_system: true
+## Where to write OpenSCAP remediation HTML report file?
+openscap_remediation_report_path: "/tmp/openscap_remediation_report_{{ ansible_facts.date_time.iso8601 }}.html"
+## Where to write OpenSCAP XCCDF Results file?
+openscap_remediation_results_path: "/tmp/openscap_remediation_results_{{ ansible_facts.date_time.iso8601 }}.xml"
+## Where to write OpenSCAP ARF (result data stream) file?
+openscap_remediation_results_arf_path: "/tmp/openscap_remediation_results_arf_{{ ansible_facts.date_time.iso8601 }}.xml"
+
+
+# OpenSCAP Reports
+## Where to download generated HTML reports to (on the Ansible Control node)?
+## Defaults to : "openscap_reports/{{ inventory_hostname }}/"
+## Resulting in: <playbook dir>/openscap_reports/<hostname>/openscap_{remediation,scan}_report_<iso8601 date>.html
+openscap_report_download_dir: "openscap_reports/{{ inventory_hostname }}/"

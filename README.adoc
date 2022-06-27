@@ -1,0 +1,102 @@
+= Ansible Role OpenSCAP
+
+This Ansible role may be used to evaluate and remediate systems via
+https://www.open-scap.org/[OpenSCAP] security profiles.
+
+= Requirements
+
+No special requirements outside of what Ansible itself brings to the table.
+However, a browser is useful to view the generated HTML report files.
+
+= Role Variables
+
+This role allows for several variables to control it's behaviour:
+
+[options="header"]
+|===
+|Variable |Description |Default value
+|`openscap_packages`
+|List of packages to be installed
+|`[<distribution specific>]`
+|`openscap_content_directory`
+|Path where OpenSCAP content is installed on the target system
+|`/usr/share/xml/scap/ssg/content`
+|`openscap_distribution_name`
+|A value used to grab the correct content file for the distribution. Override for this default may exists in distribution specific `vars/`
+|`"{{ ansible_facts.distribution \| lower }}"`
+|`openscap_data_stream_file`
+|SCAP Data Stream file, containing profiles, to read
+|`"ssg-{{ openscap_distribution_name }}{{ ansible_facts.distribution_major_version }}-ds.xml"`
+|`openscap_profile`
+|Security profile to evaluate with and remediate to
+|`''`
+|`openscap_tailoring_file`
+|Path to a OpenSCAP tailoring file to copy over and use.
+|`''`
+|`openscap_clean_result_files`
+|Clean up generated files after a successful run?
+|`true`
+|`openscap_scan_report_path`
+|Where to write evaluation HTML report (on target host)?
+|`"/tmp/openscap_scan_report_{{ ansible_facts.date_time.iso8601 }}.html"`
+|`openscap_scan_results_path`
+|Where to write evaluation XCCDF results file (on target host)?
+|`"/tmp/openscap_scan_results_{{ ansible_facts.date_time.iso8601 }}.xml"`
+|`openscap_scan_results_arf_path`
+|Where to write evaluation ARF results file (on target host)?
+|`"/tmp/openscap_scan_results_arf_{{ ansible_facts.date_time.iso8601 }}.xml"`
+|`openscap_remediate_system`
+|Should remediation be performed if system is not in a compliant state?
+|`true`
+|`openscap_remediation_report_path`
+|Where to write remediation HTML report (on target host)?
+|`"/tmp/openscap_remediation_report_{{ ansible_facts.date_time.iso8601 }}.html"`
+|`openscap_remediation_results_path`
+|Where to write remediation XCCDF results file (on target host)?
+|`"/tmp/openscap_remediation_results_{{ ansible_facts.date_time.iso8601 }}.xml"`
+|`openscap_remediation_results_arf_path`
+|Where to write remediation ARF results file (on target host)?
+|`"/tmp/openscap_remediation_results_arf_{{ ansible_facts.date_time.iso8601 }}.xml"`
+|`openscap_report_download_dir`
+|Path where to download HTML report files?
+|`"openscap_reports/{{ inventory_hostname }}/"`
+|===
+
+
+= Example Playbook
+
+How would you use this role in a Playbook?
+
+First one should decide what security profile to use on the systems.
+https://www.open-scap.org/security-policies/choosing-policy/[OpenSCAP - Choosing Policy] may be of
+help to you. Once a security profile has been decided upon you may want to tailor it to your needs.
+For such a purpose a tailoring file may be used. These are XML files containing adjustments to a
+existing profile. Often created using the https://www.open-scap.org/tools/scap-workbench/[SCAP Workbench]
+tool. Store such a file in a location on the Ansible Control Node. For example in your playbook
+directory, possibly in a `files/openscap` directory at that location.
+
+Essentially, in short:
+
+- Choose a OpenSCAP profile and set it as value for `openscap_profile`
+- Optionally: use a tailoring file for adjustment. Set `openscap_tailoring_file` to it's path.
+
+An example playbook:
+
+```
+    - hosts: servers
+      become: true
+      vars:
+        openscap_profile: 'xccdf_org.ssgproject.content_profile_cis_server_l1'
+        openscap_tailoring_file: 'files/openscap/content/ssg-cis_server_l1_tailored_for_my_company.xml'
+
+      roles:
+         - stejoo.ansible-role-openscap
+```
+
+= License
+
+BSD 3 Clause
+
+= Author Information
+
+Stefan Joosten `<stefan•ɑƬ•atcomputing•ɖɵʈ•nl>`

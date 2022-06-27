@@ -1,0 +1,103 @@
+---
+# tasks file for ansible-role-openscap
+
+# OS specific vars files in vars/ directory
+- name: Read OS specific variables
+  ansible.builtin.include_vars: "{{ lookup('first_found', params) }}"
+  vars:
+    params:
+      files:
+        - '{{ (ansible_facts.lsb.id | lower + ".yml") if ansible_facts.lsb.id is defined else omit }}'
+        - '{{ ansible_facts.distribution | lower }}-{{ ansible_facts.distribution_major_version }}.yml'
+        - '{{ ansible_facts.os_family | lower }}-{{ ansible_facts.distribution_major_version }}.yml'
+        - '{{ ansible_facts.distribution | lower }}.yml'
+        - '{{ ansible_facts.os_family | lower }}.yml'
+      paths:
+        - 'vars'
+
+- name: Ensure OpenSCAP packages
+  ansible.builtin.package:
+    name: "{{ openscap_packages }}"
+    state: present
+
+- name: Ensure tailoring file (if one is defined)
+  ansible.builtin.copy:
+    src: "{{ openscap_tailoring_file }}"
+    dest: "{{ openscap_content_directory }}/"
+  when: openscap_tailoring_file | length > 0
+
+- name: Perform OpenSCAP evaluation (scan) of system and report
+  block:
+    - name: Evaluate compliance
+      ansible.builtin.command:
+        chdir: "{{ openscap_content_directory }}"
+        cmd: >
+          /usr/bin/oscap xccdf eval
+          --profile {{ openscap_profile }}
+          --report {{ openscap_scan_report_path }}
+          --results {{ openscap_scan_results_path }}
+          --results-arf {{ openscap_scan_results_arf_path }}
+          {% if openscap_tailoring_file | length > 0 %}
+          --tailoring-file {{ openscap_tailoring_file | basename }}
+          {% endif %}
+          {{ openscap_data_stream_file }}
+      register: openscap_scan
+      when: openscap_profile | length > 0
+      changed_when: false   # task does not modify the host, do not report as such (be idempotent).
+      failed_when: openscap_scan.rc == 1
+      # oscap exits with rc 0 when OK and compliant, rc 1 upon error or rc 2 when OK but incompliant.
+
+  always:
+    - name: Download the compliance HTML report
+      ansible.builtin.fetch:
+        src: "{{ openscap_scan_report_path }}"
+        dest: "{{ openscap_report_download_dir }}/"
+        flat: true
+      changed_when: false   # either OK or fail.
+
+
+- name: Perform OpenSCAP remediation of system
+  block:
+    - name: Remediate system into compliance
+      ansible.builtin.command:
+        chdir: "{{ openscap_content_directory }}"
+        cmd: >
+          /usr/bin/oscap xccdf eval
+          --profile {{ openscap_profile }}
+          --remediate
+          --report {{ openscap_remediation_report_path }}
+          --results {{ openscap_remediation_results_path }}
+          --results-arf {{ openscap_remediation_results_arf_path }}
+          {% if openscap_tailoring_file | length > 0 %}
+          --tailoring-file {{ openscap_tailoring_file | basename }}
+          {% endif %}
+          {{ openscap_data_stream_file }}
+      register: openscap_remediate
+
+  always:
+    - name: Download the remediation HTML report
+      ansible.builtin.fetch:
+        src: "{{ openscap_remediation_report_path }}"
+        dest: "{{ openscap_report_download_dir }}/"
+        flat: true
+      changed_when: false
+  when:
+    - openscap_remediate_system
+    - openscap_scan.rc == 2
+
+
+# After (successful) scan or remediation: remove generated results and reports from host
+- name: Cleanup generated files from host
+  file:
+    path: "{{ item }}"
+    state: absent
+  when: openscap_clean_result_files
+  loop_control:
+    label: "{{ item | basename }}"
+  loop:
+    - "{{ openscap_scan_report_path }}"
+    - "{{ openscap_scan_results_path }}"
+    - "{{ openscap_scan_results_arf_path }}"
+    - "{{ openscap_remediation_report_path }}"
+    - "{{ openscap_remediation_results_path }}"
+    - "{{ openscap_remediation_results_arf_path }}"
