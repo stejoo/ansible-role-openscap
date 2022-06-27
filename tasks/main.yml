@@ -44,7 +44,7 @@
       register: openscap_scan
       when: openscap_profile | length > 0
       changed_when: false   # task does not modify the host, do not report as such (be idempotent).
-      failed_when: openscap_scan.rc == 1
+      failed_when: (openscap_scan.rc == 1) or (openscap_scan.rc >= 3)
       # oscap exits with rc 0 when OK and compliant, rc 1 upon error or rc 2 when OK but incompliant.
 
   always:
@@ -73,6 +73,19 @@
           {% endif %}
           {{ openscap_data_stream_file }}
       register: openscap_remediate
+      failed_when: (openscap_remediate.rc == 1) or (openscap_remediate.rc >= 3)
+      # compliant rc == 0, non-compliant rc == 2, error rc == 1 or rc >= 3
+
+    - name: Fail when non-complaint and we are in strict mode
+      ansible.builtin.fail:
+        msg: |
+          Failed to modify the system into compliant state!
+          Review the report for more information about the issue.
+          Resolve issues (manually) or set openscap_remediate_noncompliance_should_fail to 'false' to ignore the state.
+          Report file: "{{ openscap_report_download_dir }}/{{ openscap_remediation_report_path | basename }}"
+      when:
+        - openscap_remediate.rc == 2
+        - openscap_remediate_noncompliance_should_fail
 
   always:
     - name: Download the remediation HTML report
@@ -92,6 +105,7 @@
     path: "{{ item }}"
     state: absent
   when: openscap_clean_result_files
+  changed_when: false   # do not ruin idempotency for temp file deletion
   loop_control:
     label: "{{ item | basename }}"
   loop:

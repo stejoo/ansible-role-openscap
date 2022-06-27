@@ -48,6 +48,9 @@ This role allows for several variables to control it's behaviour:
 |`openscap_remediate_system`
 |Should remediation be performed if system is not in a compliant state?
 |`true`
+|`openscap_remediate_noncompliance_should_fail`
+|Should the Ansible run fail when the system cannot be modified into full compliance?
+|`true`
 |`openscap_remediation_report_path`
 |Where to write remediation HTML report (on target host)?
 |`"/tmp/openscap_remediation_report_{{ ansible_facts.date_time.iso8601 }}.html"`

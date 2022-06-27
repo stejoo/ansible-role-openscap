@@ -41,6 +41,8 @@ openscap_scan_results_arf_path: "/tmp/openscap_scan_results_arf_{{ ansible_facts
 # OpenSCAP Remediation (fix)
 ## Should the system be remediated if not in a compliant state? (bool; default true)
 openscap_remediate_system: true
+## Should the Ansible run fail when security profile cannot be fully applied? (bool; default true)
+openscap_remediate_noncompliance_should_fail: true
 ## Where to write OpenSCAP remediation HTML report file?
 openscap_remediation_report_path: "/tmp/openscap_remediation_report_{{ ansible_facts.date_time.iso8601 }}.html"
 ## Where to write OpenSCAP XCCDF Results file?
