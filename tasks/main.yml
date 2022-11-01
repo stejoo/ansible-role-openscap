@@ -29,6 +29,15 @@
     mode: 0644
   when: openscap_tailoring_file | length > 0
 
+- name: Ensure reports download directory
+  file:
+    path: "{{ openscap_report_download_dir }}"
+    state: directory
+    mode: "{{ openscap_report_download_dir_mode | default('0755') }}"
+  delegate_to: localhost
+  become: false
+
+
 - name: Perform OpenSCAP evaluation (scan) of system and report
   block:
     - name: Evaluate compliance

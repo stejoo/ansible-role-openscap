@@ -58,3 +58,5 @@ openscap_report_download: true
 ## Defaults to : "openscap_reports/{{ inventory_hostname }}/"
 ## Resulting in: <playbook dir>/openscap_reports/<hostname>/openscap_{remediation,scan}_report_<iso8601 date>.html
 openscap_report_download_dir: "openscap_reports/{{ inventory_hostname }}/"
+## Permissions to set on the 'openscap_report_download_dir' directory (default: '0755'):
+openscap_report_download_dir_mode: '0755'

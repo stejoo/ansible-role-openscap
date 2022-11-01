@@ -66,6 +66,9 @@ This role allows for several variables to control it's behaviour:
 |`openscap_report_download_dir`
 |Path where to download HTML report files?
 |`"openscap_reports/{{ inventory_hostname }}/"`
+|`openscap_report_download_dir_mode`
+|Permissions to set on the 'openscap_report_download_dir' directory
+|`0755`
 |===
 
 
