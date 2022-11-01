@@ -24,6 +24,9 @@
   ansible.builtin.copy:
     src: "{{ openscap_tailoring_file }}"
     dest: "{{ openscap_content_directory }}/"
+    owner: root
+    group: root
+    mode: 0644
   when: openscap_tailoring_file | length > 0
 
 - name: Perform OpenSCAP evaluation (scan) of system and report
@@ -73,6 +76,7 @@
           {% endif %}
           {{ openscap_data_stream_file }}
       register: openscap_remediate
+      changed_when: true  # no way to tell whether oscap changed something or didn't. Assume it did something.
       failed_when: (openscap_remediate.rc == 1) or (openscap_remediate.rc >= 3)
       # compliant rc == 0, non-compliant rc == 2, error rc == 1 or rc >= 3
 

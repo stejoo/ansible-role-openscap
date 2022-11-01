@@ -1,5 +1,7 @@
 ---
 galaxy_info:
+  role_name: openscap
+  namespace: stejoo
   author: Stefan Joosten <stefan@atcomputing.nl>
   description: Role to evaluate and remediate systems via OpenSCAP security profiles
   company: AT Computing
