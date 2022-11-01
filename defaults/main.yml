@@ -52,7 +52,9 @@ openscap_remediation_results_arf_path: "/tmp/openscap_remediation_results_arf_{{
 
 
 # OpenSCAP Reports
-## Where to download generated HTML reports to (on the Ansible Control node)?
+## Download the generated HTML reports to the Ansible control node?
+openscap_report_download: true
+## Where to download generated HTML reports to (on the Ansible control node)?
 ## Defaults to : "openscap_reports/{{ inventory_hostname }}/"
 ## Resulting in: <playbook dir>/openscap_reports/<hostname>/openscap_{remediation,scan}_report_<iso8601 date>.html
 openscap_report_download_dir: "openscap_reports/{{ inventory_hostname }}/"

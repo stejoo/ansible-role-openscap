@@ -36,6 +36,9 @@ This role allows for several variables to control it's behaviour:
 |`openscap_clean_result_files`
 |Clean up generated files after a successful run?
 |`true`
+|`openscap_report_download`
+|Download the generated HTML reports to the Ansible control node?
+|`true`
 |`openscap_scan_report_path`
 |Where to write evaluation HTML report (on target host)?
 |`"/tmp/openscap_scan_report_{{ ansible_facts.date_time.iso8601 }}.html"`

@@ -57,6 +57,7 @@
         dest: "{{ openscap_report_download_dir }}/"
         flat: true
       changed_when: false   # either OK or fail.
+      when: openscap_report_download
 
 
 - name: Perform OpenSCAP remediation of system
@@ -84,9 +85,13 @@
       ansible.builtin.fail:
         msg: |
           Failed to modify the system into compliant state!
-          Review the report for more information about the issue.
           Resolve issues (manually) or set openscap_remediate_noncompliance_should_fail to 'false' to ignore the state.
+          Review the OpenSCAP report for more information about the issue.
+          {% if openscap_report_download %}
           Report file: "{{ openscap_report_download_dir }}/{{ openscap_remediation_report_path | basename }}"
+          {% else %}
+          Report file not downloaded. Because variable 'openscap_report_download' is 'false'.
+          {% endif %}
       when:
         - openscap_remediate.rc == 2
         - openscap_remediate_noncompliance_should_fail
@@ -101,6 +106,7 @@
   when:
     - openscap_remediate_system
     - openscap_scan.rc == 2
+    - openscap_report_download
 
 
 # After (successful) scan or remediation: remove generated results and reports from host
