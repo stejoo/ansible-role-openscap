@@ -36,6 +36,7 @@
     mode: "{{ openscap_report_download_dir_mode | default('0755') }}"
   delegate_to: localhost
   become: false
+  when: openscap_report_download
 
 
 - name: Perform OpenSCAP evaluation (scan) of system and report
@@ -112,10 +113,10 @@
         dest: "{{ openscap_report_download_dir }}/"
         flat: true
       changed_when: false
+      when: openscap_report_download
   when:
     - openscap_remediate_system
     - openscap_scan.rc == 2
-    - openscap_report_download
 
 
 # After (successful) scan or remediation: remove generated results and reports from host
