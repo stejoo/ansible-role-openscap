@@ -1,0 +1,38 @@
+---
+#
+# Gitlab CI/CD configuration
+#
+
+variables:
+  http_proxy: 'proxy.blueforce.intern:8080'
+  https_proxy: 'proxy.blueforce.intern:8080'
+  no_proxy: 'blueforce.intern'
+
+stages:
+  - linting
+
+# default job. Defines stuff for every job
+default:
+  before_script:
+    - cp $CI_SERVER_TLS_CA_FILE /usr/local/share/ca-certificates/CI_SERVER_TLS_CA_FILE.pem
+    - update-ca-certificates 2> /dev/null
+
+# Verify the YAML is up to snuff
+yamllint:
+  stage: linting
+  needs: []
+  tags: ['ansible']
+  image: registry.gitlab.com/pipeline-components/yamllint:0.22.0
+  script:
+    - find . -type d \( -path ./files -o -path ./templates \) -prune -o -name '*.yml' -exec yamllint -f colored {} +
+
+# Syntax check Ansible playbooks and check for other problematic Ansible errors
+ansible-lint:
+  stage: linting
+  needs: []
+  tags: ['ansible']
+  image: registry.gitlab.com/pipeline-components/ansible-lint:amd64-0.46.0
+  variables:
+    ANSIBLE_LINT_PROFILE: 'production'
+  script:
+    - ansible-lint --profile "$ANSIBLE_LINT_PROFILE" -- .
