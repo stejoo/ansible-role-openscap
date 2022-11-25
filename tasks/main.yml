@@ -30,7 +30,7 @@
   when: openscap_tailoring_file | length > 0
 
 - name: Ensure reports download directory
-  file:
+  ansible.builtin.file:
     path: "{{ openscap_report_download_dir }}"
     state: directory
     mode: "{{ openscap_report_download_dir_mode | default('0755') }}"
@@ -71,6 +71,9 @@
 
 
 - name: Perform OpenSCAP remediation of system
+  when:
+    - openscap_remediate_system
+    - openscap_scan.rc == 2
   block:
     - name: Remediate system into compliance
       ansible.builtin.command:
@@ -114,14 +117,11 @@
         flat: true
       changed_when: false
       when: openscap_report_download
-  when:
-    - openscap_remediate_system
-    - openscap_scan.rc == 2
 
 
 # After (successful) scan or remediation: remove generated results and reports from host
 - name: Cleanup generated files from host
-  file:
+  ansible.builtin.file:
     path: "{{ item }}"
     state: absent
   when: openscap_clean_result_files
