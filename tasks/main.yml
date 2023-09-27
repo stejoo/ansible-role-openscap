@@ -36,7 +36,7 @@
     mode: "{{ openscap_report_download_dir_mode | default('0755') }}"
   delegate_to: localhost
   become: false
-  when: openscap_report_download
+  when: openscap_report_download | bool
 
 
 - name: Perform OpenSCAP evaluation (scan) of system and report
@@ -67,12 +67,12 @@
         dest: "{{ openscap_report_download_dir }}/"
         flat: true
       changed_when: false   # either OK or fail.
-      when: openscap_report_download
+      when: openscap_report_download | bool
 
 
 - name: Perform OpenSCAP remediation of system
   when:
-    - openscap_remediate_system
+    - openscap_remediate_system | bool
     - openscap_scan.rc == 2
   block:
     - name: Remediate system into compliance
@@ -100,14 +100,14 @@
           Failed to modify the system into compliant state!
           Resolve issues (manually) or set openscap_remediate_noncompliance_should_fail to 'false' to ignore the state.
           Review the OpenSCAP report for more information about the issue.
-          {% if openscap_report_download %}
+          {% if openscap_report_download | bool %}
           Report file: "{{ openscap_report_download_dir }}/{{ openscap_remediation_report_path | basename }}"
           {% else %}
           Report file not downloaded. Because variable 'openscap_report_download' is 'false'.
           {% endif %}
       when:
         - openscap_remediate.rc == 2
-        - openscap_remediate_noncompliance_should_fail
+        - openscap_remediate_noncompliance_should_fail | bool
 
   always:
     - name: Download the remediation HTML report
@@ -116,7 +116,7 @@
         dest: "{{ openscap_report_download_dir }}/"
         flat: true
       changed_when: false
-      when: openscap_report_download
+      when: openscap_report_download | bool
 
 
 # After (successful) scan or remediation: remove generated results and reports from host
@@ -124,7 +124,7 @@
   ansible.builtin.file:
     path: "{{ item }}"
     state: absent
-  when: openscap_clean_result_files
+  when: openscap_clean_result_files | bool
   changed_when: false   # do not ruin idempotency for temp file deletion
   loop_control:
     label: "{{ item | basename }}"
